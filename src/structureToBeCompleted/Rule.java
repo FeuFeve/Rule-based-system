@@ -16,7 +16,7 @@ public class Rule {
      *                forment l'hypothese, et le dernier forme la conclusion
      */
     public Rule(String strRule) {
-        hypothesis = new ArrayList<Atom>();
+        hypothesis = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(strRule, ";");
         while (st.hasMoreTokens()) {
             String s = st.nextToken(); // s represente un atome

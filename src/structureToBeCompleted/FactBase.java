@@ -121,7 +121,7 @@ public class FactBase {
         return s;
     }
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         FactBase bf = new FactBase();
         Atom a = new Atom("A");
         Atom b = new Atom("B");

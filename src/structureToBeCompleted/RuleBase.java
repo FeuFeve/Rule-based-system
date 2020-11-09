@@ -11,7 +11,7 @@ public class RuleBase {
      * Constructeur : cree une base de regles vide
      */
     public RuleBase() {
-        rules = new ArrayList<Rule>();
+        rules = new ArrayList<>();
     }
 
     /**
