@@ -2,6 +2,8 @@ package structureToBeCompleted;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Application {
 
@@ -22,7 +24,26 @@ public class Application {
         long startCpuTime = thread.getCurrentThreadCpuTime();
         long startUserTime = thread.getCurrentThreadUserTime();
 
-        knowledgeBase.forwardChainingBasic();
+//        knowledgeBase.forwardChainingBasic();
+        knowledgeBase.forwardChainingOpt();
+
+        List<Atom> atomsToCheck = new ArrayList<>();
+
+        for (int i = 0; i < knowledgeBase.getBr().size(); i++) {
+            Rule rule = knowledgeBase.getBr().getRule(i);
+            for (Atom a : rule.getHypothesis()) {
+                if (!atomsToCheck.contains(a)) {
+                    atomsToCheck.add(a);
+                }
+            }
+        }
+
+        System.out.println("To check:");
+        System.out.println(atomsToCheck);
+
+        for (Atom a : atomsToCheck) {
+            System.out.println("### " + a + " --> " + knowledgeBase.backwardChaining(a, new ArrayList<>(), 0) + " ###");
+        }
 
         long userTime = thread.getCurrentThreadUserTime() - startUserTime;
         long cpuTime = thread.getCurrentThreadCpuTime() - startCpuTime;

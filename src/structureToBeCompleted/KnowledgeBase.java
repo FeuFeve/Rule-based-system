@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class KnowledgeBase {
@@ -103,5 +104,78 @@ public class KnowledgeBase {
             else
                 bfSat.addAtoms(newFacts.getAtoms());
         }
+    }
+
+    public void forwardChainingOpt() {
+
+        bfSat = new FactBase();
+        bfSat.addAtoms(bf.getAtoms());
+
+        List<Atom> toProcess = new ArrayList<>(bf.getAtoms());
+        int[] counter = new int[br.size()];
+        for (int i = 0; i < br.size(); i++) {
+            Rule rule = br.getRule(i);
+            counter[i] = rule.getHypothesis().size();
+        }
+
+        while (!toProcess.isEmpty()) {
+            Atom F = toProcess.remove(0);
+
+            for (int i = 0; i < br.size(); i++) {
+                Rule rule = br.getRule(i);
+
+                if (rule.getHypothesis().contains(F)) {
+                    counter[i]--;
+                    if (counter[i] == 0) {
+                        Atom C = rule.getConclusion();
+                        if (!bfSat.contains(C)) {
+                            bfSat.addAtomWithoutCheck(C);
+                            toProcess.add(C);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean backwardChaining(Atom Q, List<Atom> Lb, int depth) {
+
+        System.out.println(tab(depth) + Q);
+        if (bf.contains(Q))
+            return true;
+
+        ruleLoop:
+        for (int index = 0; index < br.size(); index++) {
+            Rule rule = br.getRule(index);
+
+            if (rule.getConclusion() != Q)
+                continue;
+
+            for (Atom a : rule.getHypothesis())
+                if (Lb.contains(a))
+                    continue ruleLoop;
+
+            System.out.println(tab(depth + 1) + "R" + (index + 1));
+
+            for (Atom a : rule.getHypothesis()) {
+                Lb.add(a);
+
+                if (backwardChaining(a, Lb, depth + 1))
+                    Lb.remove(a);
+                else {
+                    System.out.println(tab(depth + 1) + "Échec");
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static String tab(int depth) {
+        if (depth == 0)
+            return "";
+        else
+            return "-".repeat(depth * 3) + " ";
     }
 }
