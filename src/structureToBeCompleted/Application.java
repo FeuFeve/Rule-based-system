@@ -2,8 +2,7 @@ package structureToBeCompleted;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Scanner;
 
 public class Application {
 
@@ -12,11 +11,10 @@ public class Application {
         String filePath = "Réseaux/Reunion_amis.txt";
         KnowledgeBase knowledgeBase = new KnowledgeBase(filePath);
 
-        System.out.println("### AVANT ###");
-        System.out.println("BR: " + knowledgeBase.getBr());
-        System.out.println("BF: " + knowledgeBase.getBf());
-        System.out.println("BF*: " + knowledgeBase.getBfSat());
-        System.out.println("**************************************************\n");
+        System.out.println("BR : " + knowledgeBase.getBr());
+        System.out.println("BF : " + knowledgeBase.getBf());
+        System.out.println("BF* (avant) : " + knowledgeBase.getBfSat());
+        System.out.println("*****\n");
 
         ThreadMXBean thread = ManagementFactory.getThreadMXBean();
 
@@ -24,38 +22,14 @@ public class Application {
         long startCpuTime = thread.getCurrentThreadCpuTime();
         long startUserTime = thread.getCurrentThreadUserTime();
 
-//        knowledgeBase.forwardChainingBasic();
         knowledgeBase.forwardChainingOpt();
-
-        List<Atom> atomsToCheck = new ArrayList<>();
-
-        for (int i = 0; i < knowledgeBase.getBr().size(); i++) {
-            Rule rule = knowledgeBase.getBr().getRule(i);
-
-            for (Atom a : rule.getHypothesis())
-                if (!atomsToCheck.contains(a))
-                    atomsToCheck.add(a);
-
-            if (!atomsToCheck.contains(rule.getConclusion()))
-                atomsToCheck.add(rule.getConclusion());
-        }
-
-        System.out.println("To check:");
-        System.out.println(atomsToCheck + "\n\n");
-
-        for (Atom a : atomsToCheck) {
-            knowledgeBase.backwardChainingOpt(a);
-            System.out.println("\n");
-        }
 
         long userTime = thread.getCurrentThreadUserTime() - startUserTime;
         long cpuTime = thread.getCurrentThreadCpuTime() - startCpuTime;
         long sysTime = cpuTime - userTime;
         long realTime = System.nanoTime() - startTime;
 
-        System.out.println("### APRES ###");
-        System.out.println("BF*: " + knowledgeBase.getBfSat());
-        System.out.println("**************************************************\n");
+        System.out.println("BF* (après) : " + knowledgeBase.getBfSat());
 
         System.out.println("####################");
         System.out.println("Temps d'exécution :");
@@ -63,5 +37,34 @@ public class Application {
         System.out.println("System time = " + (sysTime / 1000000f) + "ms");
         System.out.println("CPU time = " + (cpuTime / 1000000f) + "ms");
         System.out.println("User time = " + (userTime / 1000000f) + "ms");
+
+
+        Scanner scanner = new Scanner(System.in);
+        String atomString;
+        Atom atom;
+        String result;
+
+        while(true) {
+            System.out.println("\n**************************************************\n\n");
+            System.out.println("Nommer un atome à prouver :");
+
+            atomString = scanner.nextLine();
+            if (atomString.equals("/stop"))
+                break;
+            atom = new Atom(atomString);
+
+            if (knowledgeBase.getBfSat().contains(atom))
+                result = "oui";
+            else
+                result = "non";
+            System.out.println("\n> Présence de '" + atom + "' dans BF* : " + result + "\n");
+
+            System.out.println("Recherche de '" + atom + "' via chaînage arrière :");
+            if (knowledgeBase.backwardChainingOpt(atom))
+                result = "oui";
+            else
+                result = "non";
+            System.out.println("> Atome prouvé par chaînage arrière : " + result);
+        }
     }
 }
