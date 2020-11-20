@@ -141,14 +141,17 @@ public class KnowledgeBase {
     public boolean backwardChaining(Atom Q, List<Atom> Lb, int depth) {
 
         System.out.println(tab(depth) + Q);
-        if (bf.contains(Q))
+        if (bf.contains(Q)) {
+            if (Lb.isEmpty())
+                System.out.println(Q + " est prouvé");
             return true;
+        }
 
         ruleLoop:
         for (int index = 0; index < br.size(); index++) {
             Rule rule = br.getRule(index);
 
-            if (rule.getConclusion() != Q)
+            if (!rule.getConclusion().toString().equals(Q.toString()))
                 continue;
 
             for (Atom a : rule.getHypothesis())
@@ -157,18 +160,29 @@ public class KnowledgeBase {
 
             System.out.println(tab(depth + 1) + "R" + (index + 1));
 
+            boolean everyRuleAtomsProved = true;
             for (Atom a : rule.getHypothesis()) {
                 Lb.add(a);
-
-                if (backwardChaining(a, Lb, depth + 1))
+                if (backwardChaining(a, Lb, depth + 1)) {
                     Lb.remove(a);
+                }
                 else {
                     System.out.println(tab(depth + 1) + "Échec");
-                    return false;
+                    Lb.remove(a);
+                    everyRuleAtomsProved = false;
+                    break;
                 }
+            }
+
+            if (everyRuleAtomsProved) {
+                if (Lb.isEmpty())
+                    System.out.println(Q + " est prouvé");
+                return true;
             }
         }
 
+        if (Lb.isEmpty())
+            System.out.println("Échec");
         return false;
     }
 

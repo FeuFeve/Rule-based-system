@@ -39,10 +39,11 @@ public class Application {
         }
 
         System.out.println("To check:");
-        System.out.println(atomsToCheck);
+        System.out.println(atomsToCheck + "\n\n");
 
         for (Atom a : atomsToCheck) {
-            System.out.println("### " + a + " --> " + knowledgeBase.backwardChaining(a, new ArrayList<>(), 0) + " ###");
+            knowledgeBase.backwardChaining(a, new ArrayList<>(), 0);
+            System.out.println("\n");
         }
 
         long userTime = thread.getCurrentThreadUserTime() - startUserTime;
