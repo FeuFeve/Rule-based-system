@@ -138,11 +138,88 @@ public class KnowledgeBase {
         }
     }
 
-    public boolean backwardChaining(Atom Q, List<Atom> Lb, int depth) {
+    public boolean backwardChaining(Atom atomToProve) {
+        return backwardChaining(0, atomToProve, null);
+    }
+
+    public boolean backwardChaining(int depth, Atom currentAtom, List<Atom> atomsToProve) {
+
+        if (atomsToProve == null)
+            atomsToProve = new ArrayList<>();
+
+        System.out.println(tab(depth) + currentAtom);
+        if (bf.contains(currentAtom)) {
+            if (atomsToProve.isEmpty())
+                System.out.println(currentAtom + " est prouvé");
+            return true;
+        }
+
+        ruleLoop:
+        for (int index = 0; index < br.size(); index++) {
+            Rule rule = br.getRule(index);
+
+            if (!rule.getConclusion().toString().equals(currentAtom.toString()))
+                continue;
+
+            for (Atom a : rule.getHypothesis())
+                if (atomsToProve.contains(a))
+                    continue ruleLoop;
+
+            System.out.println(tab(depth + 1) + "R" + (index + 1));
+
+            boolean everyRuleAtomsProved = true;
+            for (Atom a : rule.getHypothesis()) {
+                atomsToProve.add(a);
+                if (backwardChaining(depth + 1, a, atomsToProve)) {
+                    atomsToProve.remove(a);
+                }
+                else {
+                    System.out.println(tab(depth + 1) + "[ Échec ]");
+                    atomsToProve.remove(a);
+                    everyRuleAtomsProved = false;
+                    break;
+                }
+            }
+
+            if (everyRuleAtomsProved) {
+                if (atomsToProve.isEmpty())
+                    System.out.println(currentAtom + " est prouvé");
+                return true;
+            }
+        }
+
+        if (atomsToProve.isEmpty())
+            System.out.println("[ Échec ]");
+        return false;
+    }
+
+    public boolean backwardChainingOpt(Atom Q) {
+        return backwardChainingOpt(0, Q, null, null, null);
+    }
+
+    public boolean backwardChainingOpt(int depth, Atom Q, List<Atom> atomsToProve, List<Atom> provedAtoms, List<Atom> failedAtoms) {
+
+        if (atomsToProve == null)
+            atomsToProve = new ArrayList<>();
+        if (provedAtoms == null)
+            provedAtoms = new ArrayList<>();
+        if (failedAtoms == null)
+            failedAtoms = new ArrayList<>();
+
+        if (provedAtoms.contains(Q)) {
+            System.out.println(tab(depth + 1) + Q);
+            System.out.println(tab(depth + 1) + "[ Déjà prouvé ]");
+            return true;
+        }
+        if (failedAtoms.contains(Q)) {
+            System.out.println(tab(depth + 1) + Q);
+            System.out.println(tab(depth + 1) + "[ Déjà échec ]");
+            return false;
+        }
 
         System.out.println(tab(depth) + Q);
         if (bf.contains(Q)) {
-            if (Lb.isEmpty())
+            if (atomsToProve.isEmpty())
                 System.out.println(Q + " est prouvé");
             return true;
         }
@@ -155,34 +232,36 @@ public class KnowledgeBase {
                 continue;
 
             for (Atom a : rule.getHypothesis())
-                if (Lb.contains(a))
+                if (atomsToProve.contains(a))
                     continue ruleLoop;
 
             System.out.println(tab(depth + 1) + "R" + (index + 1));
 
             boolean everyRuleAtomsProved = true;
             for (Atom a : rule.getHypothesis()) {
-                Lb.add(a);
-                if (backwardChaining(a, Lb, depth + 1)) {
-                    Lb.remove(a);
+                atomsToProve.add(a);
+                if (backwardChainingOpt(depth + 1, a, atomsToProve, provedAtoms, failedAtoms)) {
+                    atomsToProve.remove(a);
                 }
                 else {
-                    System.out.println(tab(depth + 1) + "Échec");
-                    Lb.remove(a);
+                    System.out.println(tab(depth + 1) + "[ Échec ]");
+                    atomsToProve.remove(a);
                     everyRuleAtomsProved = false;
                     break;
                 }
             }
 
             if (everyRuleAtomsProved) {
-                if (Lb.isEmpty())
+                if (atomsToProve.isEmpty())
                     System.out.println(Q + " est prouvé");
+                provedAtoms.add(Q);
                 return true;
             }
         }
 
-        if (Lb.isEmpty())
-            System.out.println("Échec");
+        if (atomsToProve.isEmpty())
+            System.out.println("[ Échec ]");
+        failedAtoms.add(Q);
         return false;
     }
 

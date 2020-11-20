@@ -31,18 +31,20 @@ public class Application {
 
         for (int i = 0; i < knowledgeBase.getBr().size(); i++) {
             Rule rule = knowledgeBase.getBr().getRule(i);
-            for (Atom a : rule.getHypothesis()) {
-                if (!atomsToCheck.contains(a)) {
+
+            for (Atom a : rule.getHypothesis())
+                if (!atomsToCheck.contains(a))
                     atomsToCheck.add(a);
-                }
-            }
+
+            if (!atomsToCheck.contains(rule.getConclusion()))
+                atomsToCheck.add(rule.getConclusion());
         }
 
         System.out.println("To check:");
         System.out.println(atomsToCheck + "\n\n");
 
         for (Atom a : atomsToCheck) {
-            knowledgeBase.backwardChaining(a, new ArrayList<>(), 0);
+            knowledgeBase.backwardChainingOpt(a);
             System.out.println("\n");
         }
 
