@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 public class Rule {
-    private List<Atom> hypothesis;// l'hypothese : une liste d'atomes (H+)
-    private Atom conclusion;// la conclusion : un atome
+    private List<Atom> hypothesis; // l'hypothese : une liste d'atomes (H+)
+    private List<Atom> negativeHypothesis; // atomes négatifs de l'hypothèse (H-)
+    private Atom conclusion; // la conclusion : un atome
 
     /**
      * Constructeur
@@ -17,18 +18,32 @@ public class Rule {
      */
     public Rule(String strRule) {
         hypothesis = new ArrayList<>();
+        negativeHypothesis = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(strRule, ";");
+        boolean lastWasNegative = false;
         while (st.hasMoreTokens()) {
             String s = st.nextToken(); // s represente un atome
-            Atom a = new Atom(s);
-            hypothesis.add(a);// ajout de a a la liste des atomes de l'hypothese (pour l'instant, on ajoute
+            // ajout de a a la liste des atomes de l'hypothese (pour l'instant, on ajoute
             // aussi celui de la conclusion)
+            if (s.startsWith("!")) {
+                negativeHypothesis.add(new Atom(s.substring(1), true));
+                System.out.println(s.substring(1));
+                lastWasNegative = true;
+            }
+            else {
+                hypothesis.add(new Atom(s));
+                lastWasNegative = false;
+            }
 
         }
         // on a mis tous les atomes crees en hypothese
         // il reste a tranferer le dernier en conclusion
-        conclusion = hypothesis.get(hypothesis.size() - 1);
-        hypothesis.remove(hypothesis.size() - 1);
+        if (lastWasNegative) {
+            conclusion = negativeHypothesis.remove(negativeHypothesis.size() - 1);
+        }
+        else {
+            conclusion = hypothesis.remove(hypothesis.size() - 1);
+        }
     }
 
     /**
@@ -38,6 +53,10 @@ public class Rule {
      */
     public List<Atom> getHypothesis() {
         return hypothesis;
+    }
+
+    public List<Atom> getNegativeHypothesis() {
+        return negativeHypothesis;
     }
 
     /**
@@ -67,13 +86,17 @@ public class Rule {
     @Override
     public String toString() {
         String s = "";
-        for (int i = 0; i < hypothesis.size(); i++) {
-            s += hypothesis.get(i);
-            if (i < hypothesis.size() - 1)
+        for (Atom atom : hypothesis) {
+            if (!s.equals(""))
                 s += " ; ";
+            s += atom;
         }
-        s += " --> ";
-        s += conclusion;
+        for (Atom atom : negativeHypothesis) {
+            if (!s.equals(""))
+                s += " ; ";
+            s += atom;
+        }
+        s += " --> " + conclusion;
         return s;
     }
 

@@ -1,0 +1,8 @@
+Alpha
+Alpha;!Bravo;Charlie
+!Alpha;Charlie
+Charlie;!Delta;Echo
+Alpha;Bravo;Charlie;Foxtrot
+Alpha;!Delta;Golf
+!Alpha;Bravo;Echo;Foxtrot
+Charlie;Golf;Echo

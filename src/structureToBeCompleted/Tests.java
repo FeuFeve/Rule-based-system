@@ -5,11 +5,13 @@ import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.List;
 
+// Questions : guillaume.perution-kihli@inria.fr
+
 public class Tests {
 
     public static void main(String[] args) {
 
-        String filePath = "Réseaux/Reunion_amis.txt";
+        String filePath = "Réseaux/Alpha-Bravo-Charlie.txt";
         KnowledgeBase knowledgeBase = new KnowledgeBase(filePath);
 
         System.out.println("### AVANT ###");

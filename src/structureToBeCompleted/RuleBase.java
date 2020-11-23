@@ -41,6 +41,17 @@ public class RuleBase {
         return rules.isEmpty();
     }
 
+    public boolean estSemiPos() {
+        for (Rule rule1 : rules) {
+            for (Rule rule2 : rules) {
+                if (rule2.getNegativeHypothesis().contains(rule1.getConclusion())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /**
      * retourne la regle de rang i
      *

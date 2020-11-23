@@ -108,21 +108,52 @@ public class KnowledgeBase {
 
     public void forwardChainingOpt() {
 
+        if (!br.estSemiPos()) {
+            System.err.println("ATTENTION : La base de règle n'est pas semi-positive (un littéral négatif est aussi dans une conclusion)");
+            return; // Pour arrêter l'exécution de la méthode si BR n'est pas semi-positive
+        }
+
+        /*
+        Crée une nouvelle base de règle qui contiendra les règles de BR moins celles dont un des atomes de la
+        base de fait apparaît en littéral négatif dans une des règles
+        Par exemple si BF = {atome1}
+        et que dans BR, Règle1 = {!atome1} -> atome2
+        Règle1 ne sera pas dans la nouvelle base de règle (car irréalisable)
+        Le temps de calcul sera réduit : l'algorithme n'aura même pas à vérifier les termes négatifs
+        (car forcément négatifs puisque ni dans BF ni dans conclusion)
+         */
+        RuleBase validRuleBase = new RuleBase();
+        for (int i = 0; i < br.size(); i++) {
+            Rule rule = br.getRule(i);
+            boolean isValid = true;
+            for (Atom atom : bf.getAtoms()) {
+                if (rule.getNegativeHypothesis().contains(atom)) {
+                    isValid = false;
+                    break;
+                }
+            }
+            if (isValid) {
+                validRuleBase.addRule(rule);
+            }
+        }
+
+        System.out.println("Nouvelle BR : " + validRuleBase);
+
         bfSat = new FactBase();
         bfSat.addAtoms(bf.getAtoms());
 
         List<Atom> toProcess = new ArrayList<>(bf.getAtoms());
-        int[] counter = new int[br.size()];
-        for (int i = 0; i < br.size(); i++) {
-            Rule rule = br.getRule(i);
+        int[] counter = new int[validRuleBase.size()];
+        for (int i = 0; i < validRuleBase.size(); i++) {
+            Rule rule = validRuleBase.getRule(i);
             counter[i] = rule.getHypothesis().size();
         }
 
         while (!toProcess.isEmpty()) {
             Atom F = toProcess.remove(0);
 
-            for (int i = 0; i < br.size(); i++) {
-                Rule rule = br.getRule(i);
+            for (int i = 0; i < validRuleBase.size(); i++) {
+                Rule rule = validRuleBase.getRule(i);
 
                 if (rule.getHypothesis().contains(F)) {
                     counter[i]--;

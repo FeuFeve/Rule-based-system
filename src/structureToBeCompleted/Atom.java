@@ -12,12 +12,18 @@ package structureToBeCompleted;
 
 public class Atom {
     private String symbol; // le symbole propositionnel
+    private boolean isNegative = false;
 
     /**
      * @param s l'atome (
      */
     public Atom(String s) {
         symbol = s;
+    }
+
+    public Atom(String s, boolean isNegative) {
+        this(s);
+        this.isNegative = isNegative;
     }
 
     @Override
@@ -34,7 +40,10 @@ public class Atom {
      */
     @Override
     public String toString() {
-        return this.symbol;
+        if (isNegative)
+            return "!" + symbol;
+        else
+            return symbol;
     }
 
     /**
