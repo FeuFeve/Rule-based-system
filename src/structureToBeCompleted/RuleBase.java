@@ -2,6 +2,7 @@ package structureToBeCompleted;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class RuleBase {
 
@@ -76,4 +77,17 @@ public class RuleBase {
         return s;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RuleBase ruleBase = (RuleBase) o;
+        return Objects.equals(rules, ruleBase.rules);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rules);
+    }
 }

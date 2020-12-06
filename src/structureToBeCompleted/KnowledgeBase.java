@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class KnowledgeBase {
 
@@ -70,21 +71,88 @@ public class KnowledgeBase {
     }
 
 
+    /**
+     * Crée une nouvelle base de règle qui contiendra les règles de BR moins celles dont un des atomes de la
+     * base de fait apparaît en littéral négatif dans une des règles
+     * Par exemple si BF = {atome1}
+     * et que dans BR, Règle1 = {!atome1} -> atome2
+     * Règle1 ne sera pas dans la nouvelle base de règle (car irréalisable)
+     * Le temps de calcul sera réduit : l'algorithme n'aura même pas à vérifier les termes négatifs
+     * (car forcément négatifs puisque ni dans BF ni dans conclusion)
+     */
+    private RuleBase calculateValidRuleBase() {
+
+        if (!br.estSemiPos()) {
+            System.err.println("ATTENTION : La base de règle n'est pas semi-positive (un littéral négatif est aussi dans une conclusion)");
+            return null; // Pour arrêter l'exécution de la méthode si BR n'est pas semi-positive
+        }
+
+        RuleBase validRuleBase = new RuleBase();
+        for (int i = 0; i < br.size(); i++) {
+            Rule rule = br.getRule(i);
+            boolean isValid = true;
+            for (Atom atom : bf.getAtoms()) {
+                if (rule.getNegativeHypothesis().contains(atom)) {
+                    isValid = false;
+                    break;
+                }
+            }
+            if (isValid) {
+                validRuleBase.addRule(rule);
+            }
+        }
+        return validRuleBase;
+    }
+
+    /**
+     * Fonction d'optimisation
+     * Prend en paramètre la base de règle actuelle (après calculateValidRuleBase())
+     * Ajoute la conclusion des règles n'ayant pas de littéraux positifs à bfSat (car elles seront forcément
+     * vrais après calculateValidRuleBase())
+     * Ajoute les autres règles à une nouvelle RuleBase qui sera retournée (ne contenant donc que des règles
+     * avec au moins 1 littéral positif)
+     */
+    private RuleBase validateRulesWithoutPositiveHypothesis(RuleBase ruleBase) {
+        RuleBase newRuleBase = new RuleBase();
+        for (int i = 0; i < ruleBase.size(); i++) {
+            Rule rule = ruleBase.getRule(i);
+            if (rule.getHypothesis().isEmpty()) {
+                Atom conclusion = rule.getConclusion();
+                if (!bfSat.contains(conclusion)) {
+                    bfSat.addAtomWithoutCheck(conclusion);
+                }
+            }
+            else {
+                newRuleBase.addRule(rule);
+            }
+        }
+        return newRuleBase;
+    }
+
     public void forwardChainingBasic() {
         // algo basique de forward chaining
+
+        RuleBase validRuleBase = calculateValidRuleBase();
+        if (validRuleBase == null) {
+            return;
+        }
+        if (!Objects.equals(br, validRuleBase)) {
+            System.out.println("Après calcul d'une base de règle réalisable :");
+            System.out.println("Nouvelle BR : " + validRuleBase);
+        }
 
         bfSat = new FactBase(); // ré-initialisation de bfSat
         bfSat.addAtoms(bf.getAtoms()); // avec les atomes de bf
         boolean fin = false;
-        boolean[] Appliquee = new boolean[br.size()];
-        for (int i = 0; i < br.size(); i++) {
+        boolean[] Appliquee = new boolean[validRuleBase.size()];
+        for (int i = 0; i < validRuleBase.size(); i++) {
             Appliquee[i] = false;
         }
         while (!fin) {
             FactBase newFacts = new FactBase();
-            for (int i = 0; i < br.size(); i++) {
+            for (int i = 0; i < validRuleBase.size(); i++) {
                 if (!Appliquee[i]) {
-                    Rule r = br.getRule(i);
+                    Rule r = validRuleBase.getRule(i);
                     // test d'applicabilite de la regle i
                     boolean applicable = true;
                     List<Atom> hp = r.getHypothesis();
@@ -108,39 +176,24 @@ public class KnowledgeBase {
 
     public void forwardChainingOpt() {
 
-        if (!br.estSemiPos()) {
-            System.err.println("ATTENTION : La base de règle n'est pas semi-positive (un littéral négatif est aussi dans une conclusion)");
-            return; // Pour arrêter l'exécution de la méthode si BR n'est pas semi-positive
+        RuleBase validRuleBase = calculateValidRuleBase();
+        if (validRuleBase == null) {
+            return;
         }
-
-        /*
-        Crée une nouvelle base de règle qui contiendra les règles de BR moins celles dont un des atomes de la
-        base de fait apparaît en littéral négatif dans une des règles
-        Par exemple si BF = {atome1}
-        et que dans BR, Règle1 = {!atome1} -> atome2
-        Règle1 ne sera pas dans la nouvelle base de règle (car irréalisable)
-        Le temps de calcul sera réduit : l'algorithme n'aura même pas à vérifier les termes négatifs
-        (car forcément négatifs puisque ni dans BF ni dans conclusion)
-         */
-        RuleBase validRuleBase = new RuleBase();
-        for (int i = 0; i < br.size(); i++) {
-            Rule rule = br.getRule(i);
-            boolean isValid = true;
-            for (Atom atom : bf.getAtoms()) {
-                if (rule.getNegativeHypothesis().contains(atom)) {
-                    isValid = false;
-                    break;
-                }
-            }
-            if (isValid) {
-                validRuleBase.addRule(rule);
-            }
+        if (!Objects.equals(br, validRuleBase)) {
+            System.out.println("Après calcul d'une base de règle réalisable :");
+            System.out.println("Nouvelle BR : " + validRuleBase);
         }
-
-        System.out.println("Nouvelle BR : " + validRuleBase);
 
         bfSat = new FactBase();
         bfSat.addAtoms(bf.getAtoms());
+
+        RuleBase optimizedRuleBase = validateRulesWithoutPositiveHypothesis(validRuleBase);
+        if (!Objects.equals(validRuleBase, optimizedRuleBase)) {
+            System.out.println("Après calcul d'une base de règle optimisée :");
+            System.out.println("Nouvelle BR : " + optimizedRuleBase);
+            System.out.println("Nouvelle BF* : " + bfSat);
+        }
 
         List<Atom> toProcess = new ArrayList<>(bf.getAtoms());
         int[] counter = new int[validRuleBase.size()];

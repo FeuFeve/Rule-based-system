@@ -8,7 +8,7 @@ public class Application {
 
     public static void main(String[] args) {
 
-        String filePath = "Réseaux/Reunion_amis.txt";
+        String filePath = "Réseaux/Alpha-Bravo-Charlie.txt";
         KnowledgeBase knowledgeBase = new KnowledgeBase(filePath);
 
         System.out.println("BR : " + knowledgeBase.getBr());

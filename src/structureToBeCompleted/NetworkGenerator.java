@@ -37,8 +37,6 @@ public class NetworkGenerator {
             return null;
         }
 
-        Random random = new Random();
-
         int size = getRandomInt(minSize, maxSize);
 
         List<Integer> list = new ArrayList<>();

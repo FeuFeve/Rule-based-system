@@ -4,5 +4,6 @@ Alpha;!Bravo;Charlie
 Charlie;!Delta;Echo
 Alpha;Bravo;Charlie;Foxtrot
 Alpha;!Delta;Golf
+!Bravo;!Delta;Hotel
 !Alpha;Bravo;Echo;Foxtrot
 Charlie;Golf;Echo

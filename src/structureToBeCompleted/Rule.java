@@ -2,6 +2,7 @@ package structureToBeCompleted;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringTokenizer;
 
 public class Rule {
@@ -27,7 +28,6 @@ public class Rule {
             // aussi celui de la conclusion)
             if (s.startsWith("!")) {
                 negativeHypothesis.add(new Atom(s.substring(1), true));
-                System.out.println(s.substring(1));
                 lastWasNegative = true;
             }
             else {
@@ -100,4 +100,19 @@ public class Rule {
         return s;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Rule rule = (Rule) o;
+        return Objects.equals(hypothesis, rule.hypothesis) &&
+                Objects.equals(negativeHypothesis, rule.negativeHypothesis) &&
+                Objects.equals(conclusion, rule.conclusion);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hypothesis, negativeHypothesis, conclusion);
+    }
 }
